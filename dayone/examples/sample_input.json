@@ -1,0 +1,25 @@
+{
+  "entries": [
+    {
+      "uuid": "A1B2C3D4E5F6G7H8I9J0",
+      "text": "Today was a great day! I spent time reflecting on my goals and felt grateful for the progress I've made.\n\nKey insights:\n- Consistency is more important than intensity\n- Small wins compound over time",
+      "creationDate": "2024-01-15T14:30:00Z",
+      "tags": ["reflection", "gratitude", "goals"],
+      "timezone": "America/Los_Angeles"
+    },
+    {
+      "uuid": "B2C3D4E5F6G7H8I9J0K1",
+      "text": "Morning meditation session. Focused on breath awareness and let thoughts pass without judgment.",
+      "creationDate": "2024-01-16T08:15:00Z",
+      "tags": ["meditation", "mindfulness"],
+      "timezone": "America/Los_Angeles"
+    },
+    {
+      "uuid": "C3D4E5F6G7H8I9J0K1L2",
+      "text": "Evening reflection: What went well today?\n\n1. Completed the project deadline\n2. Had a great conversation with a friend\n3. Exercised for 30 minutes\n\nTomorrow's intention: Start the day with journaling before checking email.",
+      "creationDate": "2024-01-16T21:45:00Z",
+      "tags": ["evening-review", "gratitude", "intentions"],
+      "timezone": "America/Los_Angeles"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "dayone",
+  "name": "Day One",
+  "version": "1.0",
+  "description": "Import from Day One CSV export. Convert your Day One JSON export to CSV using the provided script.",
+  "enabled": true,
+  "default": false,
+  "platforms": ["web", "mobile", "desktop"],
+  "requiredColumns": ["text", "date"],
+  "optionalColumns": ["source_id", "tags", "created_at", "platform", "type"],
+  "instructions": {
+    "export": "Export your Day One journal as JSON from the app",
+    "convert": "Use the Python script in scripts/convert.py to convert JSON to CSV",
+    "import": "Upload the generated CSV file to Reflection"
+  },
+  "validation": {
+    "dateFormat": "ISO8601",
+    "textMinLength": 1,
+    "supportedPlatforms": ["iOS", "macOS", "Android", "Web"]
+  }
+}
