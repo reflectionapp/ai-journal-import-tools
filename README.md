@@ -1,12 +1,14 @@
-# Migrate Your Journal to Reflection, the AI Journal
+# Migrate Your Journal to Reflection AI Journal + Coach (BETA)
 
-Migrate your journal to Reflection, the AI journal, with tools that convert Day One and other exports into the Reflection CSV format so you can import easily.
+Migrate your journal to [Reflection](https://www.reflection.app), AI journal + coach, with tools that convert Day One and other exports into the Reflection CSV format so you can import easily.
 
 ## What This Repo Is (and Isn't)
 
 **What it is:** conversion tools and guides that help you turn journal exports into the Reflection CSV format.
 
 **What it isn't:** the Reflection product itself. Reflection is the destination - an AI-powered journal app. This repo is just the migration tooling to get your history in.
+
+**Beta Note:** Every journal and every export file is different, for that purpose we're considering these docs still in beta. If you have suggestions on how to improve or if you notice anything from a specific export file you're using, please let us know. 
 
 ## Quick Start (Export → Convert → Import)
 
@@ -59,7 +61,7 @@ Privacy note: AI prompts may send your journal content to third-party AI service
 
 ## About Reflection, the AI Journal
 
-Reflection is an AI-powered journal that offers real-time guidance as you write. It is privacy-focused and provides encryption to help protect your entries. Reflection is available on iOS, Android, Mac, and the web.
+Reflection is an AI-powered journal that offers real-time guidance as you write. It is privacy-focused and provides encryption to help protect your entries. Reflection is available on iOS, Android, MacOS, and the web.
 
 ## Contributing
 
