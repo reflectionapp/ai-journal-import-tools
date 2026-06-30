@@ -3,6 +3,7 @@
 Day One to Reflection.App CSV Converter
 
 Converts Day One JSON/ZIP exports to Reflection.App import format.
+Supports multi-journal ZIP exports — each journal becomes a tag.
 Requires Python 3.7+ (stdlib only, no external dependencies).
 
 Usage:
@@ -31,14 +32,13 @@ def parse_dayone_date(date_str: str) -> tuple[str, int]:
         Tuple of (RFC3339 string, unix timestamp)
     """
     try:
-        # Parse ISO 8601 (Day One format)
         dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
         rfc3339 = dt.strftime('%Y-%m-%dT%H:%M:%SZ')
         unix_ts = int(dt.timestamp())
         return rfc3339, unix_ts
     except Exception as e:
-        print(f"Warning: Failed to parse date '{date_str}': {e}", file=sys.stderr)
-        # Return current time as fallback
+        print(
+            f"Warning: Failed to parse date '{date_str}': {e}", file=sys.stderr)
         now = datetime.utcnow()
         return now.strftime('%Y-%m-%dT%H:%M:%SZ'), int(now.timestamp())
 
@@ -58,7 +58,6 @@ def extract_entries_from_json(data: Any) -> List[Dict[str, Any]]:
     if isinstance(data, list):
         return data
     elif isinstance(data, dict):
-        # Try common keys
         for key in ['entries', 'Entries', 'items', 'Items']:
             if key in data and isinstance(data[key], list):
                 return data[key]
@@ -70,6 +69,7 @@ def extract_entries_from_json(data: Any) -> List[Dict[str, Any]]:
 def convert_entry(entry: Dict[str, Any]) -> Dict[str, str]:
     """
     Convert a Day One entry to Reflection.App CSV row.
+    Journal name is injected as a tag (e.g. "journal:Travel").
 
     Args:
         entry: Day One entry dictionary
@@ -77,23 +77,26 @@ def convert_entry(entry: Dict[str, Any]) -> Dict[str, str]:
     Returns:
         CSV row dictionary
     """
-    # Required fields with defaults
     text = entry.get('text', entry.get('Text', ''))
     entry_type = 'free write'
     platform = 'web'
 
-    # Date conversion
     creation_date = entry.get('creationDate', entry.get('CreationDate', ''))
     if not creation_date:
-        print(f"Warning: Entry missing creationDate, using current time", file=sys.stderr)
+        print("Warning: Entry missing creationDate, using current time",
+              file=sys.stderr)
         creation_date = datetime.utcnow().isoformat()
 
     date_rfc3339, created_at = parse_dayone_date(creation_date)
-
-    # Optional fields
     source_id = entry.get('uuid', entry.get('UUID', ''))
-    tags = entry.get('tags', entry.get('Tags', []))
-    tags_str = ','.join(tags) if tags else ''
+
+    # Merge existing Day One tags with journal name tag
+    tags = list(entry.get('tags', entry.get('Tags', [])) or [])
+    journal_name = entry.get('__journal__', '')
+    if journal_name and journal_name.lower() != 'journal':
+        tags.insert(0, f"journal:{journal_name}")
+
+    tags_str = ','.join(tags)
 
     return {
         'text': text,
@@ -106,32 +109,47 @@ def convert_entry(entry: Dict[str, Any]) -> Dict[str, str]:
     }
 
 
-def load_json_from_zip(zip_path: Path) -> Any:
+def load_all_entries_from_zip(zip_path: Path) -> List[Dict[str, Any]]:
     """
-    Extract and parse Journal.json from Day One ZIP export.
+    Extract and parse ALL journal JSON files from a Day One ZIP export.
+    Injects a '__journal__' key into each entry with the source journal name.
 
     Args:
         zip_path: Path to ZIP file
 
     Returns:
-        Parsed JSON data
+        Combined list of all entries across all journals
     """
+    all_entries = []
+
     with zipfile.ZipFile(zip_path, 'r') as zf:
-        # Try common filenames
-        for filename in ['Journal.json', 'journal.json']:
-            try:
-                with zf.open(filename) as f:
-                    return json.load(f)
-            except KeyError:
-                continue
-
-        # Fallback: find any .json file
         json_files = [name for name in zf.namelist() if name.endswith('.json')]
-        if json_files:
-            with zf.open(json_files[0]) as f:
-                return json.load(f)
 
-        raise FileNotFoundError("No JSON file found in ZIP")
+        if not json_files:
+            raise FileNotFoundError("No JSON files found in ZIP")
+
+        for filename in json_files:
+            # e.g. "Journal", "Travel", "Work"
+            journal_name = Path(filename).stem
+            print(f"  Processing journal: {journal_name} ({filename})")
+
+            with zf.open(filename) as f:
+                try:
+                    data = json.load(f)
+                except json.JSONDecodeError as e:
+                    print(
+                        f"  Warning: Skipping {filename} — JSON parse error: {e}", file=sys.stderr)
+                    continue
+
+            entries = extract_entries_from_json(data)
+            print(f"    Found {len(entries)} entries")
+
+            for entry in entries:
+                entry['__journal__'] = journal_name
+
+            all_entries.extend(entries)
+
+    return all_entries
 
 
 def convert_dayone_to_csv(input_path: Path, output_path: Path) -> None:
@@ -142,30 +160,27 @@ def convert_dayone_to_csv(input_path: Path, output_path: Path) -> None:
         input_path: Path to JSON or ZIP file
         output_path: Path to output CSV file
     """
-    # Load JSON data
     if input_path.suffix.lower() == '.zip':
-        print(f"Extracting Journal.json from {input_path.name}...")
-        data = load_json_from_zip(input_path)
+        print(f"Extracting all journals from {input_path.name}...")
+        entries = load_all_entries_from_zip(input_path)
     elif input_path.suffix.lower() == '.json':
         print(f"Loading {input_path.name}...")
         with open(input_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
+        entries = extract_entries_from_json(data)
     else:
         raise ValueError(f"Unsupported file type: {input_path.suffix}")
 
-    # Extract entries
-    entries = extract_entries_from_json(data)
     if not entries:
         print("Error: No entries found in export", file=sys.stderr)
         sys.exit(1)
 
-    print(f"Found {len(entries)} entries")
+    print(f"Found {len(entries)} entries total")
 
-    # Convert entries
     rows = [convert_entry(entry) for entry in entries]
 
-    # Write CSV
-    fieldnames = ['text', 'type', 'date', 'platform', 'source_id', 'tags', 'created_at']
+    fieldnames = ['text', 'type', 'date', 'platform',
+                  'source_id', 'tags', 'created_at']
     with open(output_path, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
@@ -184,9 +199,10 @@ Examples:
   python convert.py export.zip -o my_import.csv
         """
     )
-    parser.add_argument('input', type=Path, help='Day One export (JSON or ZIP)')
+    parser.add_argument('input', type=Path,
+                        help='Day One export (JSON or ZIP)')
     parser.add_argument('-o', '--output', type=Path, default=Path('reflection_import.csv'),
-                       help='Output CSV path (default: reflection_import.csv)')
+                        help='Output CSV path (default: reflection_import.csv)')
 
     args = parser.parse_args()
 
