@@ -47,8 +47,14 @@ The converter produces a CSV with these columns:
 | `date` | ✅ | ISO 8601 timestamp | "2024-01-15T14:30:00Z" |
 | `platform` | ✅ | Platform identifier | "web" |
 | `source_id` | ⬜ | Day One UUID | "A1B2C3D4..." |
-| `tags` | ⬜ | Comma-separated | "reflection,gratitude" |
+| `tags` | ⬜ | Comma-separated (see [Tags](#tags)) | "Highlights,gratitude,DayOne" |
 | `created_at` | ⬜ | Unix timestamp (seconds) | 1705331400 |
+
+### Tags
+
+For **ZIP exports**, every entry is tagged with — in order — its **source journal name**, the entry's own Day One tags, then the import source **`DayOne`** (e.g. `Journal,wisdom,DayOne`). A multi-journal ZIP export (one JSON file per journal) is fully merged, so entries from *every* journal are imported and labelled by journal. Standalone JSON exports carry no journal name and are tagged with `DayOne` only.
+
+Tag values are de-duplicated, and any commas inside a journal or tag name are replaced with spaces so a single value can't split into multiple tags.
 
 ## Examples
 
@@ -76,6 +82,7 @@ See `examples/` for:
 **Missing tags**
 - Tags are optional; empty tags field is valid
 - Multiple tags are joined with commas
+- Every entry also gets its journal name and a `DayOne` source tag (see [Tags](#tags))
 
 ---
 
