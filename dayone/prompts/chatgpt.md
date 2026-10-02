@@ -32,8 +32,11 @@ I have a Day One journal export (JSON or ZIP with Journal.json inside). Please c
 3. Generate CSV with header row
 4. Escape any quotes or commas in text content properly
 
-**Notes:**
-- Ignore images (not supported in Phase 1)
+**Day One cleanup:**
+- Remove photo and media references such as `![](dayone-moment://...)`; Reflection can't import photos yet
+- Remove Day One's Markdown backslash escapes (`calm\-ish\.` becomes `calm-ish.`)
+- Convert Markdown headings, lists, bold and italics to the HTML above rather than leaving `#`, `-` or `*` visible
+- Leave out any entry with no text left after removing photos, and tell me how many you left out
 - Ignore location and weather data
 
 Please process my export and provide the CSV file.

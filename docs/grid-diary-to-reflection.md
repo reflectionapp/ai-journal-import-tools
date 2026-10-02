@@ -52,10 +52,9 @@ If your export is already CSV:
 
 Once you have a Reflection-formatted CSV:
 
-1. Open Reflection and go to the import flow in the web app
-2. Upload the CSV file
-3. Review the import preview
-4. Confirm and complete the import
+1. In the Reflection app (phone, desktop or web), go to **Settings → Advanced → Import & Export**
+2. Choose **CSV** and pick your file
+3. Leave the screen if you like; when you come back it shows what was added, replaced and skipped (by row and reason)
 
 If unsure, start with a small test import (10-20 entries) first.
 

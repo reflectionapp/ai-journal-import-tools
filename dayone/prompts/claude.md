@@ -34,10 +34,12 @@ I have a Day One journal export (JSON or ZIP containing Journal.json). Convert i
 4. Generate CSV with proper escaping (quotes, commas, newlines)
 5. Include header row
 
-**Data to exclude:**
-- Images (Phase 1 limitation)
-- Location metadata
-- Weather data
+**Day One cleanup:**
+- Remove photo and media references such as `![](dayone-moment://...)`; Reflection can't import photos yet
+- Remove Day One's Markdown backslash escapes (`calm\-ish\.` becomes `calm-ish.`)
+- Convert Markdown headings, lists, bold and italics to the HTML above rather than leaving `#`, `-` or `*` visible
+- Leave out any entry with no text left after removing photos, and tell me how many you left out
+- Ignore location and weather data
 
 Process the attached file and provide the CSV output.
 ```

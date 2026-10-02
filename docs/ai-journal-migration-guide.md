@@ -9,6 +9,17 @@ This guide is for anyone switching journal apps and wanting to bring their histo
 If you're migrating from Day One specifically, use the detailed guide here:
 - `./day-one-to-reflection.md`
 
+## The quickest route: your AI assistant
+
+If you have Reflection Premium, you can skip the CSV entirely. In Reflection, open **Settings → Advanced → MCP Keys**
+(**Settings → MCP Key Management** in older versions) and tap **Generate MCP Key**. Copy the **Remote MCP Server URL**
+it shows (it's shown once) into your assistant's connector settings, in ChatGPT, Claude or any assistant that
+supports MCP. Then give the assistant your export and ask it to create the entries. Your export goes to the
+assistant, not to Reflection, so read its privacy terms first. Ask it to do a small batch first so you can check them in Reflection. Entries it creates are
+tagged `MCP`; it doesn't check for duplicates, so don't ask it to repeat a batch.
+
+The rest of this guide is the CSV route, which works on any plan and lets you review every row before importing.
+
 ## Step 1: Export from Your Current App
 
 Most journaling apps include an export feature. Look for **Export**, **Backup**, or **Download** in settings.
@@ -55,12 +66,14 @@ If you have JSON or a complex export, you can write a small script to map fields
 
 Once you have a Reflection-formatted CSV:
 
-1. Open Reflection and go to the import flow in the web app.
-2. Upload the CSV.
-3. Review the preview.
-4. Confirm the import.
+1. In the Reflection app (phone, desktop or web), go to **Settings → Advanced → Import & Export**.
+2. Choose **CSV** and pick your file.
+3. You can leave the screen while it runs. When you come back, it shows how many entries were added, how many
+   replaced entries from an earlier import, and any rows it skipped, by row number and reason.
 
-If you're unsure, start with a small CSV to test before importing everything.
+If you're unsure about the import, start with a small CSV (10-20 entries), check the results, and then import the
+full file. Importing the same rows again replaces those entries, including any edits you made in Reflection, so
+include a `source_id` on every row.
 
 ## If You Already Have CSV
 

@@ -44,10 +44,9 @@ If the output is inconsistent, re-run with fewer entries or clarify formatting i
 
 When your CSV looks correct:
 
-1. Open Reflection's import flow.
-2. Upload the CSV.
-3. Review the preview.
-4. Confirm import.
+1. In Reflection, go to **Settings → Advanced → Import & Export**.
+2. Choose **CSV** and pick your file.
+3. Leave the screen if you like; when you come back it shows what was added, replaced and skipped (by row and reason).
 
 ## Privacy Note
 

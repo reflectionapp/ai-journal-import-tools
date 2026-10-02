@@ -14,7 +14,9 @@ Usage:
 
 import argparse
 import csv
+import html
 import json
+import re
 import sys
 import zipfile
 from datetime import datetime
@@ -34,6 +36,83 @@ def _sanitize_tag(tag: str) -> str:
     collapsed.
     """
     return ' '.join(str(tag).replace(',', ' ').split())
+
+
+# Day One embeds photos and other media as Markdown images pointing at its own
+# store (``![](dayone-moment://...)``). Reflection can't import them, and left in
+# place they show up as literal link text in the entry.
+_MEDIA_REF = re.compile(r'!\[[^\]]*\]\([^)]*\)')
+# Day One escapes Markdown punctuation in plain text ("calm\-ish\.").
+_MD_ESCAPE = re.compile(r'\\([\\`*_{}\[\]()#+\-.!>~|])')
+_HEADING = re.compile(r'^(#{1,6})\s+(.*)$')
+_BULLET = re.compile(r'^\s*[-*+]\s+(.*)$')
+_NUMBERED = re.compile(r'^\s*\d+[.)]\s+(.*)$')
+# Bold and italics in either Markdown spelling. An underscore inside a word
+# (snake_case, file_name) is not emphasis, so underscores need a non-word
+# character on the outside.
+_BOLD = re.compile(r'\*\*(.+?)\*\*|(?<!\w)__(?!\s)(.+?)(?<!\s)__(?!\w)')
+_ITALIC = re.compile(r'(?<![*\w])\*(?!\s)(.+?)(?<!\s)\*(?![*\w])|(?<![_\w])_(?!\s)(.+?)(?<!\s)_(?![_\w])')
+# An escaped character is held as a placeholder through the emphasis passes, so
+# "\*literal\*" stays two asterisks rather than becoming italics.
+_HELD = re.compile('\x00(\\d+)\x00')
+
+
+def _inline(text: str) -> str:
+    """HTML-escape one line of Day One text and render its bold and italics."""
+    held = _MD_ESCAPE.sub(lambda m: f'\x00{ord(m.group(1))}\x00', text)
+    escaped = html.escape(held, quote=False)
+    emphasized = _ITALIC.sub(
+        lambda m: f'<em>{m.group(1) or m.group(2)}</em>',
+        _BOLD.sub(lambda m: f'<strong>{m.group(1) or m.group(2)}</strong>', escaped),
+    )
+    return _HELD.sub(lambda m: html.escape(chr(int(m.group(1))), quote=False), emphasized)
+
+
+def _line_kind(line: str) -> tuple[str, str]:
+    """Classify a line as a heading, list item or text, returning its content."""
+    for kind, pattern in (('h', _HEADING), ('ul', _BULLET), ('ol', _NUMBERED)):
+        match = pattern.match(line)
+        if match:
+            return (f'h{len(match.group(1))}', match.group(2)) if kind == 'h' else (kind, match.group(1))
+    return 'p', line
+
+
+def dayone_text_to_html(text: str) -> str:
+    """Convert Day One's Markdown entry text to the HTML Reflection stores.
+
+    Reflection wraps plain text in paragraphs as-is, so raw Day One Markdown
+    used to arrive with its ``#`` headings, backslash escapes and photo links
+    visible. Media references are dropped (photos can't be imported yet);
+    headings, bullet and numbered lists, paragraphs, bold and italics are kept.
+    """
+    blocks = re.split(r'\n\s*\n', _MEDIA_REF.sub('', text or '').strip())
+    rendered: List[str] = []
+    for block in blocks:
+        # Consecutive lines of the same kind form one element: text lines a
+        # paragraph with line breaks, list items one list.
+        run_kind, run = None, []
+
+        def flush():
+            if not run:
+                return
+            if run_kind == 'p':
+                rendered.append('<p>' + '<br />'.join(run) + '</p>')
+            elif run_kind in ('ul', 'ol'):
+                items = ''.join(f'<li>{item}</li>' for item in run)
+                rendered.append(f'<{run_kind}>{items}</{run_kind}>')
+            else:
+                rendered.extend(f'<{run_kind}>{line}</{run_kind}>' for line in run)
+
+        for line in block.split('\n'):
+            if not line.strip():
+                continue
+            kind, content = _line_kind(line)
+            if kind != run_kind or kind.startswith('h'):
+                flush()
+                run_kind, run = kind, []
+            run.append(_inline(content))
+        flush()
+    return ''.join(rendered)
 
 
 def parse_dayone_date(date_str: str) -> tuple[str, int]:
@@ -132,7 +211,7 @@ def convert_entry(entry: Dict[str, Any]) -> Dict[str, str]:
     tags_str = ','.join(tags)
 
     return {
-        'text': text,
+        'text': dayone_text_to_html(text),
         'type': entry_type,
         'date': date_rfc3339,
         'platform': platform,
@@ -230,7 +309,14 @@ def convert_dayone_to_csv(input_path: Path, output_path: Path) -> None:
 
     print(f"Found {len(entries)} entries total")
 
-    rows = [convert_entry(entry) for entry in entries]
+    converted = [convert_entry(entry) for entry in entries]
+    # An entry that was only photos has no text left once they are removed;
+    # Reflection would skip it anyway, so leave it out and say so here.
+    rows = [row for row in converted if row['text']]
+    photo_only = len(converted) - len(rows)
+    if photo_only:
+        print(f"Note: Left out {photo_only} entries with no text (photos only). "
+              "Reflection can't import photos yet.")
 
     fieldnames = ['text', 'type', 'date', 'platform',
                   'source_id', 'tags', 'created_at']

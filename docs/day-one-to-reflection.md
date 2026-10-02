@@ -8,6 +8,17 @@ If you're switching from Day One, you don't need to start fresh. This guide walk
 
 The goal is to keep your writing intact - dates, text, and metadata - so your journal history comes with you.
 
+## The quickest route: your AI assistant
+
+If you have Reflection Premium, you can skip the CSV entirely. In Reflection, open **Settings → Advanced → MCP Keys**
+(**Settings → MCP Key Management** in older versions) and tap **Generate MCP Key**. Copy the **Remote MCP Server URL**
+it shows (it's shown once) into your assistant's connector settings, in ChatGPT, Claude or any assistant that
+supports MCP. Then give the assistant your export and ask it to create the entries. Your export goes to the
+assistant, not to Reflection, so read its privacy terms first. Ask it to do a small batch first so you can check them in Reflection. Entries it creates are
+tagged `MCP`; it doesn't check for duplicates, so don't ask it to repeat a batch.
+
+The rest of this guide is the CSV route, which works on any plan and lets you review every row before importing.
+
 ## What You'll Need
 
 - A Day One export file (ZIP, JSON, or text-based export)
@@ -79,12 +90,14 @@ This method keeps data local and avoids sending your journal content to any exte
 
 Once you have your Reflection CSV:
 
-1. Open Reflection and go to the import tool in the web app.
-2. Upload the CSV file.
-3. Review the import preview.
-4. Confirm and complete the import.
+1. In the Reflection app (phone, desktop or web), go to **Settings → Advanced → Import & Export**.
+2. Choose **CSV** and pick your file.
+3. You can leave the screen while it runs. When you come back, it shows how many entries were added, how many
+   replaced entries from an earlier import, and any rows it skipped, by row number and reason.
 
-If you're unsure about the import, start with a small CSV (10-20 entries), check the results, and then import the full file.
+If you're unsure about the import, start with a small CSV (10-20 entries), check the results, and then import the
+full file. Importing the same rows again replaces those entries, including any edits you made in Reflection, so
+include a `source_id` on every row.
 
 ## Troubleshooting
 
@@ -99,9 +112,12 @@ If you're unsure about the import, start with a small CSV (10-20 entries), check
 - This usually happens when line breaks or commas weren't escaped.
 - Re-run conversion with smaller batches or ensure proper CSV quoting.
 
-**Import fails**
+**Import fails or rows are skipped**
+- The Import & Export screen says what went wrong, and lists skipped rows by number and reason.
 - Validate the CSV against the schema: `./journal-csv-format.md`
-- Remove empty rows and re-import.
+
+**Photos are missing**
+- Reflection can't import photos yet. Email help@reflection.app to hear when it can.
 
 ## Privacy & Data Handling
 

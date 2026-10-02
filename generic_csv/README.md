@@ -12,16 +12,18 @@ Canonical CSV schema for importing journal entries into Reflection.App.
 
 | Column | Type | Format | Description |
 |--------|------|--------|-------------|
-| `text` | string | HTML | Entry content in HTML format (see HTML requirements below) |
-| `type` | string | Enumeration | Entry type (default: "free write") |
-| `date` | string | ISO 8601 (RFC3339) | Entry timestamp (e.g., "2024-01-15T14:30:00Z") |
-| `platform` | string | Identifier | Platform/source (default: "web") |
+| `text` | string | HTML or plain text | Entry content (see HTML requirements below) |
+| `date` | string | `YYYY-MM-DD`, `YYYY-MM-DD HH:MM[:SS]` or RFC3339 | When the entry was written |
+
+Header names are matched case- and spacing-insensitively (`Text`, `Source ID`). Columns not listed here are ignored.
 
 ### Optional Columns
 
 | Column | Type | Format | Description |
 |--------|------|--------|-------------|
-| `source_id` | string | Free text | Original entry ID from source system |
+| `type` | string | Enumeration | `free write` (default), `highlight` or `lowlight`; case-insensitive |
+| `platform` | string | Identifier | Platform/source (default: "mobile") |
+| `source_id` | string | Free text | Original entry ID from source system; used to recognize a re-import |
 | `tags` | string | Comma-separated | Tag list (e.g., "reflection,gratitude") |
 | `created_at` | integer | Unix timestamp (seconds) | Creation time in source system |
 
@@ -47,28 +49,28 @@ text,type,date,platform
 "<p>This is a multi-line entry.</p><p><br /></p><p>It has multiple paragraphs.</p>",free write,2024-01-15T14:30:00Z,web
 ```
 
-### `type` (required)
-- **Format**: String identifier
+### `type` (optional)
+- **Format**: String identifier, case-insensitive
 - **Default**: "free write"
-- **Case**: Lowercase recommended
-- **Valid values**: "free write" (others reserved for future use)
+- **Valid values**: "free write", "highlight", "lowlight". A row with any other type is skipped.
 
 ### `date` (required)
-- **Format**: ISO 8601 / RFC3339
-- **Timezone**: Must include timezone (use `Z` for UTC or `+HH:MM` offset)
-- **Examples**:
-  - `2024-01-15T14:30:00Z` (UTC)
-  - `2024-01-15T09:30:00-05:00` (EST)
+- **Formats**:
+  - `2024-01-15` (stored as that day in the importing device's time zone)
+  - `2024-01-15 14:30` or `2024-01-15 14:30:00` (that wall-clock time in the importing device's time zone)
+  - `2024-01-15T14:30:00Z` or `2024-01-15T09:30:00-05:00` (that exact moment)
+- A row with a missing, unreadable or future date is skipped.
 
-### `platform` (required)
+### `platform` (optional)
 - **Format**: String identifier
-- **Default**: "web"
+- **Default**: "mobile"
 - **Case**: Lowercase
 - **Purpose**: Track entry source for analytics
 
 ### `source_id` (optional)
 - **Format**: Free text (typically UUID or numeric ID)
-- **Purpose**: Idempotency and deduplication
+- **Purpose**: Idempotency. Importing a row whose `source_id` was imported before replaces that entry, including edits
+  made in Reflection since. Without it, rows are matched by date and text.
 - **Example**: Day One UUID, Evernote note ID
 
 ### `tags` (optional)
@@ -87,18 +89,21 @@ text,type,date,platform
 ## CSV Format Rules
 
 - **Header row**: Required
-- **Encoding**: UTF-8
+- **Encoding**: UTF-8 (a byte-order mark is fine; other encodings are refused)
 - **Line endings**: LF (`\n`) or CRLF (`\r\n`)
 - **Quoting**: Per RFC 4180 (quote fields containing commas, quotes, or newlines)
 - **Delimiter**: Comma (`,`)
 
 ## Validation
 
-Imports will fail if:
-- Required columns are missing
-- `date` is not valid ISO 8601
-- `text` is empty
-- CSV is malformed (unclosed quotes, invalid encoding)
+The whole import fails, and the app says why, if:
+- The `text` or `date` column is missing
+- The file isn't UTF-8
+- The CSV is malformed (for example an unclosed quote; the app names the line)
+- No row could be imported
+
+A single bad row is skipped instead, and the app lists it by row number with the reason: missing text, missing,
+unreadable or future date, unsupported type, or a value too large to store.
 
 ## Examples
 
@@ -118,11 +123,9 @@ text,type,date,platform,source_id,tags,created_at
 
 ## Future Extensions
 
-Reserved for Phase 2:
-- `images` - Image attachment support
-- `location` - Geolocation data
-- `mood` - Mood/sentiment tracking
-- `weather` - Weather conditions
+Not supported yet:
+- Photos and other images. Email help@reflection.app to hear when photo import arrives.
+- `location`, `mood`, `weather` columns are ignored; put anything you want to keep in the text.
 
 ## Migration from Other Services
 

@@ -48,7 +48,7 @@ I have a Day One journal export (JSON or ZIP containing Journal.json). Convert i
 5. Include header row
 
 **Data to exclude:**
-- Images (Phase 1 limitation)
+- Images and photo references (Reflection can't import photos yet)
 - Location metadata
 - Weather data
 
