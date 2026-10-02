@@ -6,7 +6,8 @@ produced, or build a file by hand in a spreadsheet.
 Each row is one journal entry.
 
 > **Easiest route for most journals:** if you have Reflection Premium, connect an AI assistant (ChatGPT, Claude,
-> or any tool that supports MCP) to Reflection under **Settings → Advanced → MCP Keys**, hand it your export, and
+> or any tool that supports MCP) to Reflection under **Settings → Advanced → MCP Keys** (**Settings → MCP Key
+> Management** in older versions), hand it your export, and
 > ask it to create the entries. It writes them straight into your journal, with no CSV in between. A CSV is the
 > right choice when you want to check every row yourself before importing.
 
@@ -32,7 +33,8 @@ date,text
 | `type`      | `free write` (the default), `highlight` or `lowlight`. Case doesn't matter.                         |
 | `source_id` | Any ID that's unique per entry, such as the ID from the app you're leaving. Strongly recommended. See [Importing again](#importing-again). |
 
-Any other column (`title`, `mood`, `weather` and so on) is ignored, not imported. If you want that information
+The importer also reads `platform` and `created_at`, which the Day One converter fills in. You don't need to add
+them yourself. Any other column (`title`, `mood`, `weather` and so on) is ignored, not imported. If you want that information
 in Reflection, put it in the text, for example `<p><strong>Mood:</strong> calm</p>` at the top.
 
 ## Dates

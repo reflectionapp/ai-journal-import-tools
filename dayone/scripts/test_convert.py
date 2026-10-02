@@ -159,6 +159,16 @@ class TextToHtmlTest(unittest.TestCase):
             convert.dayone_text_to_html(text),
             "<h2>Wins</h2><ol><li>Shipped</li><li>Rested</li></ol>")
 
+    def test_underscore_emphasis(self):
+        self.assertEqual(
+            convert.dayone_text_to_html("__bold__ and _italic_ but snake_case_name"),
+            "<p><strong>bold</strong> and <em>italic</em> but snake_case_name</p>")
+
+    def test_escaped_markers_stay_literal(self):
+        self.assertEqual(
+            convert.dayone_text_to_html("\\*literal\\* and \\_kept\\_ and a \\> b"),
+            "<p>*literal* and _kept_ and a &gt; b</p>")
+
     def test_markdown_escapes_are_removed(self):
         self.assertEqual(convert.dayone_text_to_html("calm\\-ish\\. 100\\%"), "<p>calm-ish. 100\\%</p>")
 

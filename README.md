@@ -12,10 +12,11 @@ Migrate your journal to [Reflection](https://www.reflection.app), AI journal + c
 
 ## Quick Start
 
-**Recommended: let your AI assistant write the entries.** With Reflection Premium, create a key under
-**Settings → Advanced → MCP Keys** and connect Reflection to ChatGPT, Claude or any assistant that supports MCP.
-Give it your export and ask it to create the entries. Nothing to convert or upload, and you can check a few entries
-before it does the rest. (Entries it creates are tagged `MCP`. It doesn't check for duplicates, so ask it to do one
+**Recommended: let your AI assistant write the entries.** With Reflection Premium, open
+**Settings → Advanced → MCP Keys** (**Settings → MCP Key Management** in older versions), tap **Generate MCP Key**,
+and copy the **Remote MCP Server URL** it shows into ChatGPT, Claude or any assistant that supports MCP. Then give
+the assistant your export and ask it to create the entries. There's no CSV to build or upload to Reflection, but your
+export does go to the assistant, so read its privacy terms first. Check a few entries before it does the rest. (Entries it creates are tagged `MCP`. It doesn't check for duplicates, so ask it to do one
 batch at a time.)
 
 **Or build a CSV (Export → Convert → Import):**

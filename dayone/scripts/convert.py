@@ -47,14 +47,25 @@ _MD_ESCAPE = re.compile(r'\\([\\`*_{}\[\]()#+\-.!>~|])')
 _HEADING = re.compile(r'^(#{1,6})\s+(.*)$')
 _BULLET = re.compile(r'^\s*[-*+]\s+(.*)$')
 _NUMBERED = re.compile(r'^\s*\d+[.)]\s+(.*)$')
-_BOLD = re.compile(r'\*\*(.+?)\*\*')
-_ITALIC = re.compile(r'(?<![*\w])\*(?!\s)(.+?)(?<!\s)\*(?![*\w])')
+# Bold and italics in either Markdown spelling. An underscore inside a word
+# (snake_case, file_name) is not emphasis, so underscores need a non-word
+# character on the outside.
+_BOLD = re.compile(r'\*\*(.+?)\*\*|(?<!\w)__(?!\s)(.+?)(?<!\s)__(?!\w)')
+_ITALIC = re.compile(r'(?<![*\w])\*(?!\s)(.+?)(?<!\s)\*(?![*\w])|(?<![_\w])_(?!\s)(.+?)(?<!\s)_(?![_\w])')
+# An escaped character is held as a placeholder through the emphasis passes, so
+# "\*literal\*" stays two asterisks rather than becoming italics.
+_HELD = re.compile('\x00(\\d+)\x00')
 
 
 def _inline(text: str) -> str:
     """HTML-escape one line of Day One text and render its bold and italics."""
-    escaped = html.escape(_MD_ESCAPE.sub(r'\1', text), quote=False)
-    return _ITALIC.sub(r'<em>\1</em>', _BOLD.sub(r'<strong>\1</strong>', escaped))
+    held = _MD_ESCAPE.sub(lambda m: f'\x00{ord(m.group(1))}\x00', text)
+    escaped = html.escape(held, quote=False)
+    emphasized = _ITALIC.sub(
+        lambda m: f'<em>{m.group(1) or m.group(2)}</em>',
+        _BOLD.sub(lambda m: f'<strong>{m.group(1) or m.group(2)}</strong>', escaped),
+    )
+    return _HELD.sub(lambda m: html.escape(chr(int(m.group(1))), quote=False), emphasized)
 
 
 def _line_kind(line: str) -> tuple[str, str]:

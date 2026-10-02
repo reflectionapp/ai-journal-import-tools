@@ -11,9 +11,11 @@ If you're migrating from Day One specifically, use the detailed guide here:
 
 ## The quickest route: your AI assistant
 
-If you have Reflection Premium, you can skip the CSV entirely. Create a key under **Settings → Advanced → MCP Keys**
-in Reflection, connect it to ChatGPT, Claude or any assistant that supports MCP, give it your export and ask it to
-create the entries. Ask it to do a small batch first so you can check them in Reflection. Entries it creates are
+If you have Reflection Premium, you can skip the CSV entirely. In Reflection, open **Settings → Advanced → MCP Keys**
+(**Settings → MCP Key Management** in older versions) and tap **Generate MCP Key**. Copy the **Remote MCP Server URL**
+it shows (it's shown once) into your assistant's connector settings, in ChatGPT, Claude or any assistant that
+supports MCP. Then give the assistant your export and ask it to create the entries. Your export goes to the
+assistant, not to Reflection, so read its privacy terms first. Ask it to do a small batch first so you can check them in Reflection. Entries it creates are
 tagged `MCP`; it doesn't check for duplicates, so don't ask it to repeat a batch.
 
 The rest of this guide is the CSV route, which works on any plan and lets you review every row before importing.
