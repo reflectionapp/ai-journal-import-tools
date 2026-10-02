@@ -134,6 +134,64 @@ class ZipLoadingTest(unittest.TestCase):
         self.assertEqual(rows[0]["source_id"], "G1")
 
 
+class TextToHtmlTest(unittest.TestCase):
+    def test_plain_paragraphs_and_line_breaks(self):
+        self.assertEqual(
+            convert.dayone_text_to_html("first line\nsecond line\n\nnext paragraph"),
+            "<p>first line<br />second line</p><p>next paragraph</p>")
+
+    def test_heading_list_and_emphasis(self):
+        text = "# Morning walk\n\nFelt **grateful** and *calm*\n\n- one\n- two"
+        self.assertEqual(
+            convert.dayone_text_to_html(text),
+            "<h1>Morning walk</h1><p>Felt <strong>grateful</strong> and <em>calm</em></p>"
+            "<ul><li>one</li><li>two</li></ul>")
+
+    def test_list_under_a_line_of_text(self):
+        text = "Key insights:\n- one\n- two\nAfter"
+        self.assertEqual(
+            convert.dayone_text_to_html(text),
+            "<p>Key insights:</p><ul><li>one</li><li>two</li></ul><p>After</p>")
+
+    def test_numbered_list_and_heading_with_body(self):
+        text = "## Wins\n1. Shipped\n2. Rested"
+        self.assertEqual(
+            convert.dayone_text_to_html(text),
+            "<h2>Wins</h2><ol><li>Shipped</li><li>Rested</li></ol>")
+
+    def test_markdown_escapes_are_removed(self):
+        self.assertEqual(convert.dayone_text_to_html("calm\\-ish\\. 100\\%"), "<p>calm-ish. 100\\%</p>")
+
+    def test_photo_references_are_dropped(self):
+        text = "![](dayone-moment://ABC123)\n\nAfter the photo"
+        self.assertEqual(convert.dayone_text_to_html(text), "<p>After the photo</p>")
+
+    def test_photo_only_entry_is_empty(self):
+        self.assertEqual(convert.dayone_text_to_html("![](dayone-moment://ABC123)"), "")
+
+    def test_html_in_text_is_escaped(self):
+        self.assertEqual(convert.dayone_text_to_html("a < b & c"), "<p>a &lt; b &amp; c</p>")
+
+    def test_asterisks_inside_words_are_left_alone(self):
+        self.assertEqual(convert.dayone_text_to_html("2*3*4"), "<p>2*3*4</p>")
+
+
+class PhotoOnlyEntryTest(unittest.TestCase):
+    def test_photo_only_entries_are_left_out_of_the_csv(self):
+        tmp = Path(tempfile.mkdtemp())
+        jpath = tmp / "export.json"
+        jpath.write_text(json.dumps(_journal([
+            _entry("T1", text="Words"),
+            _entry("P1", text="![](dayone-moment://ABC123)"),
+        ])), encoding='utf-8')
+        out = tmp / "out.csv"
+        convert.convert_dayone_to_csv(jpath, out)
+        with open(out, newline='', encoding='utf-8') as f:
+            rows = list(csv.DictReader(f))
+        self.assertEqual([r["source_id"] for r in rows], ["T1"])
+        self.assertEqual(rows[0]["text"], "<p>Words</p>")
+
+
 class JsonPathTest(unittest.TestCase):
     def test_standalone_json_gets_source_tag_only(self):
         tmp = Path(tempfile.mkdtemp())

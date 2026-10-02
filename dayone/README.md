@@ -64,10 +64,16 @@ See `examples/` for:
 
 ## Limitations
 
-- **Images**: Not supported in Phase 1 (text-only import)
-- **Location**: Not preserved
-- **Weather**: Not preserved
-- **Rich text formatting**: Converted to plain text
+- **Photos and other media**: Reflection can't import photos yet. Photo references are removed from the text, and
+  an entry that was only photos is left out of the CSV (the converter tells you how many). To hear when photo import
+  arrives, email [help@reflection.app](mailto:help@reflection.app?subject=Notify%20me%20about%20photo%20import).
+- **Formatting**: Headings, bullet and numbered lists, bold and italics are kept. Other Markdown (tables, links,
+  code blocks) comes through as plain text.
+- **Location and weather**: Not preserved.
+
+After you import, Reflection shows the result on the Import & Export screen: how many entries were added, how many
+replaced an earlier import, and any rows it skipped and why. Importing the same CSV again replaces those entries,
+including any edits you made to them in Reflection.
 
 ## Troubleshooting
 

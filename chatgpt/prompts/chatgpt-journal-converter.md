@@ -46,7 +46,7 @@ I have a Day One journal export (JSON or ZIP with Journal.json inside). Please c
 4. Escape any quotes or commas in text content properly
 
 **Notes:**
-- Ignore images (not supported in Phase 1)
+- Remove image and photo references (Reflection can't import photos yet)
 - Ignore location and weather data
 
 Please process my export and provide the CSV file.
